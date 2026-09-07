@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Cookbook</title>
+<meta name="description" content="A small collection of beginner-friendly recipes, mostly cooked for one, from ingredients you can find at one grocery run.">
+<meta name="theme-color" content="#edeee7">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Cookbook">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#16211d; --rice:#edeee7; --bone:#fcfbf7;
+  --jade:#2f5d4e; --sesame:#a8791f;
+  --mute:#7a8480; --line:#d9dcd3; --line2:#e8eae2;
+  --display:"Fraunces",Georgia,serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--rice); color:var(--ink);
+  font-family:var(--body); font-size:15px; line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+:focus-visible{outline:2px solid var(--jade); outline-offset:2px; border-radius:3px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px 80px}
+[inert]{pointer-events:none}
+
+/* ---------- masthead ---------- */
+.mast{padding:38px 0 22px;border-bottom:1px solid var(--line)}
+.mast h1{
+  font-family:var(--display);font-weight:600;font-size:clamp(36px,7.5vw,62px);
+  letter-spacing:-.02em;line-height:.98;margin:0 0 14px
+}
+.intro{max-width:52ch;font-size:15px;line-height:1.62;color:#3f4a45;margin:0 0 16px}
+.tally{
+  display:flex;flex-wrap:wrap;gap:6px 18px;
+  font-family:var(--mono);font-size:11.5px;color:var(--mute)
+}
+.tally b{color:var(--ink);font-weight:600}
+
+/* ---------- controls ---------- */
+.controls{padding:22px 0 16px}
+.search{
+  width:100%;padding:12px 14px;font-family:var(--body);font-size:16px;color:var(--ink);
+  background:var(--bone);border:1px solid var(--line);border-radius:3px
+}
+.search::placeholder{color:var(--mute)}
+.filterset{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;align-items:center}
+.flabel{font-family:var(--mono);font-size:11px;color:var(--mute);margin-right:4px}
+.chip{
+  font-family:var(--body);font-size:12.5px;padding:6px 12px;cursor:pointer;
+  background:transparent;border:1px solid var(--line);border-radius:100px;color:var(--ink);
+  transition:background .12s,border-color .12s,color .12s
+}
+.chip:hover{border-color:var(--jade)}
+.chip[aria-pressed="true"]{background:var(--jade);border-color:var(--jade);color:var(--bone)}
+.chip.clear{border-style:dashed;color:var(--mute)}
+
+/* filter drawer — collapsed by default on small screens */
+.fToggle{display:none}
+#filters{margin-top:4px}
+
+/* ---------- the ID index ---------- */
+.index{padding:18px 0 6px;border-top:1px solid var(--line2);margin-top:20px}
+.index-head{
+  display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:10px
+}
+.index-head span{font-family:var(--mono);font-size:11px;color:var(--mute)}
+.ids{display:flex;flex-wrap:wrap;gap:4px}
+.id{
+  font-family:var(--mono);font-size:12px;font-weight:500;
+  width:34px;height:32px;display:flex;align-items:center;justify-content:center;
+  background:var(--bone);border:1px solid var(--line);border-radius:2px;
+  color:var(--ink);cursor:pointer;padding:0;
+  border-bottom:2px solid var(--cue,var(--line));
+  transition:transform .1s,background .12s
+}
+.id:hover{background:#fff;transform:translateY(-1px)}
+.id[data-off="1"]{opacity:.24;cursor:default}
+.id[data-off="1"]:hover{transform:none;background:var(--bone)}
+
+/* ---------- grid ---------- */
+.count{
+  font-family:var(--mono);font-size:11.5px;
+  color:var(--mute);padding:26px 0 12px;border-top:1px solid var(--line2);margin-top:20px
+}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:12px}
+.card{
+  position:relative;text-align:left;background:var(--bone);border:1px solid var(--line);
+  border-radius:3px;padding:16px 16px 14px;cursor:pointer;font:inherit;color:inherit;
+  display:flex;flex-direction:column;gap:8px;
+  transition:transform .13s ease,box-shadow .13s ease,border-color .13s ease
+}
+.card:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(22,33,29,.09);border-color:var(--jade)}
+.card::before{
+  content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:var(--cue,var(--jade));border-radius:3px 0 0 3px
+}
+.card-top{display:flex;align-items:baseline;gap:9px}
+.card-id{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--sesame)}
+.card-cuisine{font-family:var(--mono);font-size:11px;color:var(--mute);margin-left:auto}
+.card h2{
+  font-family:var(--display);font-weight:600;font-size:19px;line-height:1.2;
+  letter-spacing:-.01em;margin:0
+}
+.card p{margin:0;font-size:13px;line-height:1.5;color:#48534e}
+.card-meta{
+  display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:auto;padding-top:8px;
+  border-top:1px solid var(--line2);
+  font-family:var(--mono);font-size:10.5px;color:var(--mute)
+}
+.empty{
+  padding:60px 20px;text-align:center;color:var(--mute);
+  border:1px dashed var(--line);border-radius:3px
+}
+.empty b{display:block;font-family:var(--display);font-size:20px;color:var(--ink);margin-bottom:6px}
+
+/* ---------- detail ---------- */
+.scrim{
+  position:fixed;inset:0;background:rgba(22,33,29,.42);z-index:40;
+  display:none;backdrop-filter:blur(2px)
+}
+.scrim[data-open="1"]{display:block}
+.panel{
+  position:fixed;z-index:50;background:var(--bone);display:none;
+  top:0;right:0;bottom:0;width:min(620px,100%);overflow-y:auto;
+  overscroll-behavior:contain;
+  border-left:1px solid var(--line);
+  animation:slide .22s cubic-bezier(.2,.7,.3,1)
+}
+.panel[data-open="1"]{display:block}
+@keyframes slide{from{transform:translateX(24px);opacity:.4}to{transform:none;opacity:1}}
+.panel-bar{
+  position:sticky;top:0;background:var(--bone);border-bottom:1px solid var(--line);
+  padding:12px 20px;display:flex;align-items:center;gap:12px;z-index:2
+}
+.panel-bar .pid{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--sesame)}
+.panel-bar .pcuisine{font-family:var(--mono);font-size:11px;color:var(--mute)}
+.barbtn{
+  background:transparent;border:1px solid var(--line);border-radius:3px;
+  height:34px;min-width:34px;padding:0 10px;cursor:pointer;color:var(--ink);
+  font-family:var(--body);font-size:12.5px;line-height:1
+}
+.barbtn:hover{border-color:var(--jade)}
+#pShare{margin-left:auto}
+#pCopied{
+  font-family:var(--mono);font-size:11px;color:var(--jade);margin-left:auto
+}
+.panel-body{padding:22px 20px 60px}
+.panel-body h2{
+  font-family:var(--display);font-weight:600;font-size:clamp(25px,5.4vw,33px);
+  line-height:1.1;letter-spacing:-.02em;margin:0 0 10px
+}
+.blurb{font-size:14.5px;line-height:1.6;color:#3f4a45;margin:0 0 16px}
+.statline{
+  display:flex;flex-wrap:wrap;gap:5px 14px;font-family:var(--mono);font-size:11px;
+  color:var(--mute);padding:11px 0;border-top:1px solid var(--line2);border-bottom:1px solid var(--line2)
+}
+.locked{
+  margin:16px 0 0;padding:12px 15px;border-radius:3px;font-size:12.5px;line-height:1.5;
+  background:#f3f1e9;border:1px solid var(--line);color:#5b635e
+}
+.locked b{color:var(--sesame);font-family:var(--mono);font-size:11px;display:block;margin-bottom:3px}
+.sect{
+  font-family:var(--display);font-size:15px;font-weight:600;
+  color:var(--jade);margin:28px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line2)
+}
+.ig{font-family:var(--body);font-size:12px;font-weight:600;color:var(--mute);margin:14px 0 6px}
+.ing{list-style:none;margin:0;padding:0}
+.ing li{
+  padding:6px 0 6px 18px;border-bottom:1px solid var(--line2);font-size:14px;position:relative
+}
+.ing li::before{content:"";position:absolute;left:2px;top:14px;width:5px;height:5px;border-radius:50%;background:var(--jade);opacity:.5}
+.steps{list-style:none;counter-reset:s;margin:0;padding:0}
+.steps li{counter-increment:s;padding:14px 0 14px 40px;border-bottom:1px solid var(--line2);position:relative}
+.steps li::before{
+  content:counter(s);position:absolute;left:4px;top:14px;
+  font-family:var(--mono);font-size:12px;font-weight:600;color:var(--sesame)
+}
+.steps strong{display:block;font-size:14px;font-weight:600;margin-bottom:3px}
+.steps span{font-size:14px;line-height:1.6;color:#3f4a45}
+.notes{margin:0;padding:0;list-style:none}
+.notes li{
+  font-size:13.5px;line-height:1.6;color:#3f4a45;padding:9px 0 9px 16px;
+  border-left:2px solid var(--line);margin-bottom:8px
+}
+.rel{display:flex;flex-wrap:wrap;gap:6px}
+.rel button{
+  font-family:var(--mono);font-size:11.5px;padding:6px 11px;cursor:pointer;color:var(--ink);
+  background:transparent;border:1px solid var(--line);border-radius:100px
+}
+.rel button:hover{border-color:var(--jade);background:#fff}
+
+.colophon{
+  margin-top:44px;padding-top:20px;border-top:1px solid var(--line);
+  font-size:13px;line-height:1.65;color:var(--mute);max-width:56ch
+}
+
+@media(max-width:640px){
+  .wrap{padding:0 15px 60px}
+  .mast{padding:26px 0 18px}
+  .grid{grid-template-columns:1fr}
+  .ids{flex-wrap:nowrap;overflow-x:auto;padding-bottom:8px;-webkit-overflow-scrolling:touch}
+  .id{flex:0 0 auto}
+  #idNote{display:none}
+  .panel{width:100%;border-left:0}
+  .panel-body{padding:20px 16px 70px}
+  .fToggle{
+    display:inline-block;margin-top:12px;font-family:var(--body);font-size:12.5px;
+    padding:8px 14px;background:transparent;border:1px solid var(--line);
+    border-radius:100px;color:var(--ink);cursor:pointer
+  }
+  #filters[data-open="0"]{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+  .card:hover{transform:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap" id="wrap">
+
+  <header class="mast">
+    <h1>The Cookbook</h1>
+    <p class="intro">
+      Recipes I actually cook, written down properly. Most are scaled for one person,
+      most use ingredients you can get in a single trip to Walmart, and none of them
+      assume you already know what you're doing. Cook whatever looks good.
+    </p>
+    <div class="tally">
+      <span><b id="tTotal">34</b> recipes</span>
+      <span><b id="tCuisine">9</b> cuisines</span>
+      <span><b id="tMethod">8</b> ways to cook them</span>
+    </div>
+  </header>
+
+  <div class="controls">
+    <input class="search" id="q" type="search" placeholder="Search recipes, ingredients, or notes…" autocomplete="off">
+    <button class="fToggle" id="fToggle" aria-expanded="false" aria-controls="filters">Filter</button>
+    <div id="filters" data-open="1">
+      <div class="filterset" id="fCuisine"><span class="flabel">Cuisine</span></div>
+      <div class="filterset" id="fMethod"><span class="flabel">Equipment</span></div>
+      <div class="filterset">
+        <button class="chip clear" id="fClear">Reset filters</button>
+      </div>
+    </div>
+  </div>
+
+  <section class="index">
+    <div class="index-head">
+      <span>Jump to a recipe</span>
+      <span id="idNote">colored by cuisine</span>
+    </div>
+    <div class="ids" id="ids"></div>
+  </section>
+
+  <div class="count" id="count" role="status"></div>
+  <div class="grid" id="grid"></div>
+
+  <p class="colophon">
+    Ingredient amounts are what worked in my kitchen, not gospel — taste as you go and
+    adjust. A few recipes note where an amount was a best guess rather than a tested
+    number. Check the ingredient list before you cook if you avoid anything.
+  </p>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<aside class="panel" id="panel" role="dialog" aria-modal="true" aria-labelledby="pTitle">
+  <div class="panel-bar">
+    <span class="pid" id="pId"></span>
+    <span class="pcuisine" id="pCuisine"></span>
+    <button class="barbtn" id="pShare">Copy link</button>
+    <button class="barbtn" id="pClose" aria-label="Close recipe">✕</button>
+  </div>
+  <div class="panel-body" id="pBody"></div>
+</aside>
+
+<script>
+const RECIPES = [{"id":1,"title":"Air Fryer Korean Sweet Potato (Goguma)","cuisine":"Korean","method":"Air Fryer","time":"40 min","level":"Beginner","serves":"Serves 2","blurb":"Caramelized, honey-sweet, fluffy inside. Walmart sells these as \"Japanese\" or \"Korean\" sweet potatoes — purple skin, pale flesh.","allergens":"none","ing":[{"g":null,"items":["2 Korean sweet potatoes, medium","1 tsp neutral oil","1 pinch flaky salt (optional)"]}],"steps":[["Prep","Scrub potatoes. Pat dry. Rub all over with oil. Sprinkle with salt if using."],["Air fry","380°F for 35–40 minutes. Flip halfway."],["Doneness","Skin should look wrinkled and caramelized. Fork slides in with no resistance."],["Serve","Split open. Eat as-is, or top with butter and flaky salt."]],"notes":["Goguma is sweeter and denser than orange sweet potatoes. The wrinkled skin is the doneness cue — pull too early and the center stays starchy."],"related":[22]},{"id":2,"title":"Air Fryer Bulgogi","cuisine":"Korean","method":"Air Fryer","time":"15 min","level":"Beginner","serves":"Serves 3","blurb":"Pre-marinated Korean BBQ beef, fast in the air fryer. Caramelized edges, juicy inside. H Mart sells trays ready to cook.","allergens":"soy, wheat","ing":[{"g":null,"items":["1 lb pre-marinated bulgogi (chuck eye roll)","1 cup white rice, dry","½ cup kimchi (optional)","6 leaves romaine or red leaf lettuce (optional, for ssam)"]}],"steps":[["Prep meat","Pat strips lightly with paper towel. Wet meat steams instead of searing. Leave some marinade clinging; that's flavor."],["Preheat","Air fryer to 400°F for 3 min."],["Line basket","Parchment paper. Marinade drips burn onto the basket otherwise."],["Cook","Spread meat in a single layer, not crowded. 1 lb usually needs 2 batches. 400°F for 6–8 min, shake or flip halfway."],["Check doneness","Edges crisp and dark caramelized. Internal temp 145°F+."],["Rest","2 min before plating. Serve over rice with kimchi, or ssam-style in lettuce wraps."]],"notes":["Timings are for ~½\" chunks (chuck eye roll). Thinner shavings: 4–5 min total. Thicker pieces: 8–10 min.","Sugar in the marinade burns above 400°F, so don't push the temp higher.","Leftovers reheat at 350°F, 2–3 min."],"related":[31]},{"id":3,"title":"Sweet Red Bean Ongsimi (Microwave)","cuisine":"Korean","method":"Microwave","time":"10 min","level":"Beginner","serves":"Serves 1","blurb":"Microwave version of frozen Korean sweet rice dumpling porridge. Cozy, fast.","allergens":"soy (check packet)","ing":[{"g":null,"items":["1 packet frozen sweet rice ongsimi","1 packet red bean porridge (included)","280 mL water"]}],"steps":[["Boil water","Heat 280 mL water separately until boiling. Pour into a deep microwave-safe bowl."],["Cook ongsimi","Add ongsimis. Microwave on HIGH 3 min, stirring occasionally so they don't stick. They're ready when they float and feel firm."],["Add porridge","Pour in the red bean porridge packet. Microwave on MEDIUM (50–60%) 5 more min, stirring well throughout — medium power prevents splattering."],["Rest & serve","Let sit 1–2 min. Eat warm."]],"notes":["Use a deep bowl — this bubbles up aggressively. Adjust time based on microwave power. The porridge thickens as it cools.","Stovetop version: boil 280 mL water, cook ongsimi 3 min, add porridge packet, cook 5 min more."],"related":[]},{"id":4,"title":"Pork & Chive Mandoo","cuisine":"Korean","method":"Stovetop","time":"60 min","level":"Intermediate","serves":"Serves 6","blurb":"Korean pork and chive dumplings — a large batch of juicy filling, with an optional homemade wrapper.","allergens":"pork, wheat","locked":"Sugar locked at 1 tbsp (10 Aug 2026). The source called for sugar in the steps but listed no amount; 1 tbsp against 1.5 kg pork is the standard balancing ratio.","ing":[{"g":"Wrapper","items":["1 kg all-purpose flour","350 mL warm water — add up to 375 mL if needed"]},{"g":"Filling","items":["1.5 kg pork mince","3 cups chives, finely chopped","3 tsp minced ginger","3 tsp salt","1.5 tsp ground pepper","1.5 tsp MSG / Dashida","1 tbsp sugar","18 tbsp hot water (~270 mL)"]}],"steps":[["Mix seasoning","Mix together hot water, ginger, salt, sugar, and MSG/Dashida."],["Bind pork","Gradually add to pork until sticky."],["Pepper","Add pepper."],["Add chives","Add in chives and mix until evenly combined."],["Fill & fold","Place 1 tbsp of filling onto wrapper and fold."],["Homemade wrapper — divide","Divide dough into small pieces (~20–25 g each)."],["Homemade wrapper — roll","Roll each piece into a 3-inch circle."]],"notes":["Sugar here is for balance, not sweetness; it rounds out the salt and MSG.","Pan-fry potsticker-style for the best texture — sear, add water, cover, steam, then re-crisp. See #12.","Freeze uncooked on a tray, then bag."],"related":[12,13,14]},{"id":5,"title":"Kongguksu","cuisine":"Korean","method":"Stovetop","time":"30 min + chill","level":"Beginner","serves":"Serves 2","blurb":"Cold Korean noodle soup in a chilled, nutty soybean broth. A summer dish — served cold.","allergens":"soy, egg, tree nut (almond), sesame","locked":"Full ingredient list locked (10 Aug 2026). The original was lost; these are standard kongguksu ratios at 100 g dry noodles per person, not recovered originals.","ing":[{"g":"Broth","items":["500 mL unsweetened soy milk","40 g blanched almonds","1 tbsp toasted sesame seeds","½ tsp salt"]},{"g":"Noodles & garnish","items":["200 g somyeon (thin wheat noodles), dry","1 egg, hard-boiled and halved","½ cucumber, julienned","1 tsp toasted sesame seeds"]}],"steps":[["Make the broth","Blend soy milk, almonds, sesame seeds, and salt until completely smooth. Chill thoroughly — at least 2 hours."],["Cook noodles","Cook somyeon per package, usually 3–4 min. They cook fast; taste at 3."],["Shock","Rinse under cold running water until the noodles are fully cold to the touch. Drain hard."],["Combine","Divide noodles between two bowls. Pour the cold broth over."],["Serve","Top with cucumber, egg halves, and sesame seeds."]],"notes":["Soy milk must be unsweetened. Sweetened soy milk ruins this and there's no fixing it after.","Rinse the noodles until genuinely cold — residual heat turns the broth lukewarm and flat.","Salt to taste at the table is traditional; some people prefer it barely salted."],"related":[]},{"id":6,"title":"Potato Jeon","cuisine":"Korean","method":"Stovetop","time":"20 min","level":"Beginner","serves":"Serves 2","blurb":"Crispy Korean potato pancakes made from blended fresh potato — chewy inside, golden outside.","allergens":"none","locked":"Starch and salt locked at 2 tbsp and ½ tsp (10 Aug 2026). Both were used in the source steps but absent from its ingredient list.","ing":[{"g":null,"items":["500 g russet potatoes","100 g onion","1 cup water","2 tbsp potato starch","½ tsp salt","Neutral oil, for the pan"]}],"steps":[["Prep potatoes","Wash, peel, and cube potatoes."],["Blend & strain","Blend potato, onion, and water together. Strain through a wide sieve into a bowl."],["Recombine","Pour off the excess water from the strained liquid and add potato starch to the solids."],["Season","Stir in the salt."],["Cook","Medium heat, thin oil. Spoon in thin pancakes and cook 3–4 min per side until golden. Don't flip early."],["Serve","Hot, with dipping sauce."]],"notes":["The starch that settles out of the strained liquid can replace or supplement packaged potato starch — let the drained liquid sit 10 minutes, pour off the water, and scrape the white paste from the bottom.","Thin pancakes crisp; thick ones go gummy in the middle.","#14 works as a dipping sauce here."],"related":[14]},{"id":7,"title":"Shiroi Koibito Cookies","cuisine":"Japanese","method":"Oven","time":"60 min (+20 min freeze)","level":"Advanced","serves":"Makes ~12 sandwiches","blurb":"Langue de chat butter cookies sandwiching a white chocolate filling — the Hokkaido souvenir classic. Precision baking; the one genuinely fussy recipe in this book.","allergens":"dairy, egg, almond, wheat","locked":"Quantities locked at standard langue de chat ratios — roughly equal weights butter, sugar, and egg white (10 Aug 2026). Only the 5 g almond flour was confirmed from source. This is the one recipe where a wrong number actually breaks the result, so treat the first batch as a test.","ing":[{"g":"Biscuit","items":["50 g unsalted butter, room temperature","50 g powdered sugar","50 g egg whites, room temperature","45 g cake flour","5 g almond flour","5 g flavoring powder (matcha or cocoa, optional)","10 g heavy cream"]},{"g":"Filling","items":["100 g white chocolate"]}],"steps":[["Cream butter","Room-temperature butter with powdered sugar."],["Whip","Electric whisk until the butter turns slightly pale."],["Add egg whites","Add room-temperature egg whites in several batches, mixing well between each."],["Add dry","Sift in cake flour and flavoring powder."],["Fold","Spatula, until no powder remains."],["Add cream","Fold in heavy cream until smooth."],["Pipe","Set up a square mold and pipe the mixture in."],["Smooth","Smooth the surface and lift the mold away."],["Bake","150°C / 300°F for 10 minutes."],["Melt chocolate","Melt white chocolate over a double boiler at a bare simmer."],["Set filling","Pipe into square molds, smooth, freeze 20 minutes."],["Assemble","Sandwich the cookies, using melted white chocolate as glue."]],"notes":["Use 4 g almond flour instead of 5 g when swapping in matcha or cocoa.","Egg whites must be at room temperature or the batter splits.","White chocolate scorches easily — keep the double boiler at a bare simmer, never a boil.","Walmart carries cake flour and almond flour in the baking aisle."],"related":[]},{"id":8,"title":"Sizzling Beef Pepper Rice","cuisine":"Japanese","method":"Stovetop","time":"20 min","level":"Beginner","serves":"Serves 2","blurb":"Pepper Lunch at home — thin beef, buttered rice, corn, and a lot of black pepper, all seared together in a hot pan.","allergens":"soy, wheat, dairy","locked":"Quantities locked at standard ratios (10 Aug 2026). The source wrote \"thin sliced meat\" and \"sweetener\" without amounts; mirin chosen over sugar for the sweetener.","ing":[{"g":null,"items":["300 g thin sliced beef (shabu-style)","2 cups cooked white rice, cold","½ cup canned corn, drained","2 tbsp butter","3 tbsp soy sauce","1 tbsp mirin","2 tsp minced garlic","1 tsp coarse black pepper, plus more to finish","2 stalks green onion, sliced"]}],"steps":[["Make the sauce","Combine soy sauce, mirin, and garlic. Set aside."],["Heat the pan","Cast iron or heavy skillet over high heat until genuinely hot. This dish depends on the sear."],["Butter the rice","Mound cooked rice in the center of the pan. Press the butter into the top."],["Arrange","Ring the rice with the beef and corn."],["Sear","Leave undisturbed 1–2 min to brown the beef and crisp the rice bottom."],["Sauce & toss","Pour sauce over. Toss everything together until the beef is just cooked through."],["Finish","Heavy grind of black pepper and green onion. Serve immediately."]],"notes":["The pan must be hotter than feels comfortable. Day-old cold rice crisps better than fresh.","Shabu-style beef from H Mart is the right cut; Walmart's thin sliced steak works in a pinch."],"related":[10]},{"id":9,"title":"Chicken Katsu","cuisine":"Japanese","method":"Stovetop","time":"45 min","level":"Intermediate","serves":"Serves 4","blurb":"Panko-crusted fried chicken, milk-marinated and breaded — written as a freezer meal-prep batch.","allergens":"dairy, egg, wheat","locked":"Quantities locked at standard breading ratios for 4 cutlets (10 Aug 2026).","ing":[{"g":null,"items":["4 chicken breasts, butterflied and pounded thin","2 cups milk (for marinade)","1 tsp salt","½ tsp black pepper","1 cup all-purpose flour","2 eggs, beaten","2 cups panko breadcrumbs","Neutral oil, for frying","Tonkatsu sauce, to serve"]}],"steps":[["Marinate","Submerge chicken in milk. Refrigerate at least 1 hour, ideally overnight. Milk tenderizes and mellows any gaminess."],["Dry & season","Remove from milk, pat dry. Season both sides with salt and pepper."],["Bread","Dredge in flour, then beaten egg, then press firmly into panko. Press hard — loose panko falls off in the oil."],["Freezer prep","Lay breaded cutlets flat on a parchment-lined tray. Freeze solid, then transfer to a bag. Cook from frozen."],["Fry","350°F oil, 3–4 min per side from fresh. Golden brown, internal 165°F."],["Rest & slice","Rest 3 min on a rack, then slice crosswise into strips. Serve with tonkatsu sauce and rice."]],"notes":["The out-of-order freezer step — breading before freezing, not after — is deliberate. It's what makes this a batch recipe.","For the air fryer version from frozen, see #11.","Rest on a rack, never a plate. A plate traps steam and softens the crust."],"related":[11]},{"id":10,"title":"Rice Cooker Gyudon","cuisine":"Japanese","method":"Rice Cooker","time":"50 min","level":"Beginner","serves":"Serves 1","blurb":"Japanese beef bowl, dump-and-forget. Everything goes in at the start; no monitoring.","allergens":"soy, wheat, egg","ing":[{"g":null,"items":["200 g thin sliced beef (shabu-style)","1 cup short-grain white rice, rinsed","1 cup water (reduced — the sauce adds liquid)","½ yellow onion, sliced thin","3 tbsp soy sauce","2 tbsp mirin","1 tbsp sugar","1 egg (cooked separately)","Pickled ginger (beni shoga), to serve — optional"]}],"steps":[["Rinse rice","Rinse until the water runs mostly clear. Add to the rice cooker with the reduced water."],["Mix sauce","Stir together soy sauce, mirin, and sugar until the sugar dissolves."],["Layer","Lay sliced onion over the rice, then the beef on top. Do not stir — layering keeps the rice from going gummy."],["Pour & start","Pour sauce evenly over the top. Close the lid, run a standard white rice cycle."],["Rest","When the cycle ends, leave on keep-warm 10 minutes before opening."],["Egg","Meanwhile, fry an egg sunny-side up, or soft-boil one (6½ min from boiling)."],["Serve","Fluff gently, bowl it up, top with the egg and pickled ginger."]],"notes":["Water is reduced to 1 cup because the sauce contributes liquid — don't use the rice cooker's normal fill line.","The egg is the one step that can't be hands-off. Drop it entirely for true zero-touch cooking; the dish still works.","Shabu-style beef from H Mart; Walmart's thin sliced steak, partially frozen and sliced thinner, is the fallback."],"related":[8]},{"id":11,"title":"Air Fryer Frozen Pork Katsu","cuisine":"Japanese","method":"Air Fryer","time":"22 min","level":"Beginner","serves":"Serves 2","blurb":"Prepped-and-frozen breaded pork cutlets straight from the freezer. No thawing.","allergens":"dairy, egg, wheat, pork","ing":[{"g":null,"items":["2 frozen breaded pork katsu cutlets","Cooking oil spray","Tonkatsu sauce, to serve","Shredded cabbage, to serve — optional"]}],"steps":[["Preheat","Air fryer to 375°F for 3 min."],["Oil both sides","Spray both sides of each frozen cutlet. This is what browns the coating — skip it and the panko stays pale and floury."],["Arrange","Single layer, not touching. Cook in batches if needed."],["Cook","375°F for 18–22 minutes, flipping halfway."],["Check doneness","Internal temp 145°F, or cut into the thickest point — no pink, juices clear."],["Rest & slice","Rest 3 min on a rack. Slice crosswise. Serve with tonkatsu sauce and shredded cabbage."]],"notes":["Thickness is the whole variable. 18 min suits thin cutlets; thick ones need the full 22 or a few more. Once you've dialed in the number for your cutlets, record it here.","A paler coating than deep-fried katsu is normal for frozen breaded items — the panko has only circulating air to brown in. Judge by internal temp, not color."],"related":[9]},{"id":12,"title":"Pan-Fried Pork & Chive Dumplings (Potsticker Style)","cuisine":"Asian","method":"Stovetop","time":"12 min","level":"Beginner","serves":"Serves 2","blurb":"Crispy bottom, steamed top. The best method for frozen dumplings, full stop.","allergens":"pork, wheat, soy","ing":[{"g":null,"items":["12 frozen pork & chive dumplings","1 tbsp neutral oil","¼ cup water","1 splash rice vinegar"]}],"steps":[["Heat pan","Non-stick or cast iron over medium-high with a thin layer of oil."],["Sear","Add frozen dumplings flat-side down. Sear 2–3 min until the bottoms are golden brown. Don't move them."],["Steam","Pour in water and rice vinegar. Cover immediately. Steam 5–6 min until the water evaporates."],["Crisp","Uncover. Let the bottoms re-crisp 1–2 min. Slide onto a plate, crispy-side up."]],"notes":["Rice vinegar in the steam water is the trick — it adds subtle tang and helps crisp the bottoms.","No need to thaw. Thawing makes them soggy and they'll tear.","Air fryer version: #13. Dipping sauce: #14."],"related":[4,13,14]},{"id":13,"title":"Air Fryer Pork & Chive Dumplings","cuisine":"Asian","method":"Air Fryer","time":"12 min","level":"Beginner","serves":"Serves 2","blurb":"Convenience-focused. Crispy all over rather than just the bottom, but you lose the crisp/soft contrast.","allergens":"pork, wheat, soy","ing":[{"g":null,"items":["12 frozen pork & chive dumplings","1 tbsp neutral oil"]}],"steps":[["Preheat","Air fryer to 375°F for 3 min."],["Oil","Toss frozen dumplings with oil so each is lightly coated. Non-negotiable — skipping it gives dry, tough skin."],["Cook","Arrange in a single layer, not touching, pleats up. Cook 8–10 min, flipping at halfway. Spray or brush with water mid-cook to keep the wrappers from drying."]],"notes":["Less mess than pan-frying, but you give up the crisp/soft contrast.","Spritz with water at the flip — wrappers dry out otherwise. A 1:1 water-and-oil brush instead of straight oil works even better.","Larger dumplings: add 2–3 min.","Stovetop version: #12. Dipping sauce: #14."],"related":[4,12,14]},{"id":14,"title":"Simple Dumpling Dipping Sauce","cuisine":"Asian","method":"No-Cook","time":"2 min","level":"Beginner","serves":"Serves 2","blurb":"Salty, tangy, nutty. Pairs with any dumpling method, and with potato jeon.","allergens":"soy, sesame","ing":[{"g":null,"items":["2 tbsp soy sauce","1 tbsp rice vinegar","1 tsp sesame oil","1 tsp chili oil","1 tsp fresh ginger, grated (optional)"]}],"steps":[["Mix","Whisk everything together in a small bowl. Done."]],"notes":["Skip the chili oil if you don't like heat. Add a pinch of sugar to round things out.","Julienned fresh ginger instead of grated is excellent if you don't mind the texture.","Goes with #4, #6, #12, and #13."],"related":[4,6,12,13]},{"id":15,"title":"Rice Cooker Hainanese Chicken","cuisine":"Asian","method":"Rice Cooker","time":"60 min","level":"Intermediate","serves":"Serves 4","blurb":"Poached chicken and fragrant rice cooked in one appliance, with a sharp ginger-garlic sauce. Deceptively simple for how good it is.","allergens":"soy, sesame","locked":"Quantities locked (10 Aug 2026). Garlic (10–12 cloves) and neutral oil (2–3 tbsp) were confirmed after two source cells came back as corrupted Excel date serials; the rest are standard ratios.","ing":[{"g":"Chicken & rice","items":["4 bone-in chicken thighs","2 cups jasmine rice, rinsed","2 cups chicken broth","2 inches fresh ginger, sliced","1 tsp salt","Cucumber, sliced, to serve"]},{"g":"Ginger-garlic sauce","items":["12 garlic cloves, minced","2 tbsp neutral oil, heated","2 inches fresh ginger, grated","1 tsp salt","1 tbsp sesame oil"]}],"steps":[["Load the cooker","Rinsed rice, broth, sliced ginger, and salt into the rice cooker pot. Stir once."],["Layer chicken","Lay chicken thighs skin-side up directly on top of the rice. Don't submerge — the fat renders down into the rice as it cooks."],["Cook","Run a standard white rice cycle."],["Make the sauce","While that runs, combine minced garlic, grated ginger, and salt in a heatproof bowl. Heat the neutral oil until shimmering, then pour it over the aromatics — it will sizzle. Stir in sesame oil."],["Rest","Leave on keep-warm 10 minutes after the cycle ends."],["Serve","Chicken over the rice, cucumber alongside, sauce spooned over everything."]],"notes":["Broth is deliberately reduced to a 1:1 ratio — the chicken releases a lot of liquid as it cooks.","Pouring genuinely hot oil over raw garlic is the whole point of the sauce. It cooks the raw edge off without frying it. Get the oil shimmering, not smoking."],"related":[10]},{"id":16,"title":"One-Pot Chuck Beef Curry","cuisine":"Asian","method":"Stovetop","time":"90 min","level":"Beginner","serves":"Serves 2","blurb":"Braised beef curry with potato and carrot. Gram-measured. Chuck is the right cut — it needs the long simmer.","allergens":"soy, wheat (curry powder may contain)","ing":[{"g":null,"items":["400 g beef chuck (stew meat), cubed","250 g russet potato, cubed","150 g carrots, sliced into rounds","150 g yellow onion, chopped","2 cups chicken broth","2 tbsp curry powder","1 tbsp soy sauce","1 tbsp neutral oil","1 tsp cornstarch + 1 tbsp cold water (mixed together)","Salt & pepper to taste"]}],"steps":[["Brown the beef","Oil in a heavy pot over medium-high. Brown the beef on all sides, ~6 min. Work in batches if crowded. Remove and set aside."],["Sweat the onion","Same pot, medium heat. Onion until translucent, ~5 min."],["Bloom the curry powder","Add curry powder to the onion. Stir constantly 60 seconds until fragrant. This step is what separates good curry from dusty curry."],["Simmer the beef","Return the beef. Add broth and soy sauce. Bring to a boil, then reduce to a low simmer, cover, 45 min."],["Add vegetables","Potato and carrot. Simmer uncovered 20–25 min until fork-tender."],["Thicken","Stir in the cornstarch slurry. Simmer 2 min until the sauce coats a spoon."],["Taste & serve","Salt and pepper to taste. Serve over white rice."]],"notes":["Potatoes go in late on purpose — added at the start they disintegrate.","Soy sauce isn't traditional here; it's doing depth-of-flavor work, and you'll miss it if you skip it.","Curry powder is the one item that may not already be in your pantry. Walmart carries it in the spice aisle."],"related":[26]},{"id":17,"title":"Slow Cooker Honey Garlic Chicken + Rice","cuisine":"Asian","method":"Slow Cooker","time":"6–7 hrs","level":"Beginner","serves":"Serves 1 (with leftovers)","blurb":"Set it in the morning, eat it when you get home. The hands-off counterpart to #33.","allergens":"soy, wheat","ing":[{"g":null,"items":["1 lb chicken thighs","3 tbsp soy sauce","3 tbsp honey","1 tsp minced garlic (from jar)","1 tsp cornstarch + 1 tbsp cold water (mixed together)","1 cup white rice, dry"]}],"steps":[["Mix sauce","Soy sauce, honey, and garlic in the slow cooker."],["Add chicken","Turn to coat."],["Cook","LOW 6–7 hrs."],["Thicken","Remove chicken. Stir the cornstarch mixture into the sauce — it thickens in ~2 min."],["Serve","Chicken and sauce over white rice."]],"notes":["Rice: 1 cup rice + 2 cups water. Bring to a boil, cover, simmer 18 min. Start it when you get home, 20 min before eating.","On HIGH: 3–3½ hrs.","Buy minced garlic in a jar — no chopping.","Want it in 20 minutes with a sticky glaze instead? That's #33."],"related":[33]},{"id":18,"title":"Simple Beef & Tomato Pasta","cuisine":"Italian","method":"Stovetop","time":"25 min","level":"Beginner","serves":"Serves 1","blurb":"Weeknight meat sauce, scaled to one. Half a can of crushed tomatoes is exactly right for a single serving.","allergens":"wheat, dairy (parmesan)","ing":[{"g":null,"items":["2 oz penne or spaghetti, dry","¼ lb ground beef (80/20)","½ can (7 oz) crushed tomatoes","¼ yellow onion, chopped","1 tsp olive oil","½ tsp garlic powder","½ tsp Italian seasoning","Salt & pepper to taste","Grated parmesan, to serve — optional"]}],"steps":[["Boil pasta","Salted water, cook to package directions. Reserve a splash of pasta water before draining."],["Brown beef","Olive oil in a skillet over medium-high. Ground beef and onion together, breaking up the beef, ~5–6 min until no pink remains."],["Drain fat","Tip off the excess fat. 80/20 renders a lot."],["Simmer sauce","Add crushed tomatoes, garlic powder, Italian seasoning, salt, and pepper. Simmer 8–10 min until slightly thickened."],["Combine","Add the drained pasta to the sauce and toss. Splash of pasta water if it's tight."],["Serve","Parmesan over the top."]],"notes":["Freeze the remaining half-can of crushed tomatoes, or just double the recipe and have lunch sorted.","Shallots instead of yellow onion works as a 1:1 volume swap. Milder and sweeter, and they cook faster — cut the sauté time or they'll burn."],"related":[19]},{"id":19,"title":"Slow Cooker Pasta e Fagioli","cuisine":"Italian","method":"Slow Cooker","time":"6–7 hrs + 30 min","level":"Beginner","serves":"Serves 1 (with leftovers)","blurb":"Italian bean and pasta soup. The pasta goes in at the end — add it early and you'll get mush.","allergens":"wheat","ing":[{"g":null,"items":["1 can diced tomatoes (with liquid)","1 can white/cannellini beans, drained","2 cups chicken broth","½ yellow onion, chopped","1 tsp garlic powder","1 tsp Italian seasoning","1 cup dry elbow pasta (add at the end — see step 3)","Salt & pepper to taste"]}],"steps":[["Load","Everything except the pasta into the slow cooker."],["Cook","LOW 6–7 hrs."],["Add pasta","Switch to HIGH, cook 30 more min until the pasta is tender."],["Finish","Taste, adjust salt. Serve hot."]],"notes":["On HIGH throughout: 3–3½ hrs, then the same 30 min for the pasta.","Standard cans are 15 oz.","Leftovers thicken considerably overnight — loosen with a splash of broth when reheating."],"related":[18]},{"id":20,"title":"Slow Cooker Chicken Tacos","cuisine":"Mexican","method":"Slow Cooker","time":"6–8 hrs","level":"Beginner","serves":"Serves 1 (with leftovers)","blurb":"Three ingredients. The single easiest recipe in this book.","allergens":"wheat (tortillas), dairy (cheese)","ing":[{"g":null,"items":["1 lb chicken thighs","1 cup salsa","1 packet taco seasoning","Flour tortillas, to serve","Shredded Mexican cheese blend, to serve"]}],"steps":[["Load","Place chicken in the slow cooker."],["Season","Pour salsa over the chicken. Sprinkle taco seasoning on top."],["Cook","LOW 6–8 hrs."],["Shred","Two forks, directly in the pot."],["Serve","In flour tortillas, topped with shredded cheese."]],"notes":["On HIGH: 3–4 hrs.","Shredding in the pot lets the meat reabsorb the sauce — don't drain it first."],"related":[27]},{"id":21,"title":"Simple Chimichurri","cuisine":"Argentine","method":"No-Cook","time":"25 min","level":"Beginner","serves":"Serves 2","blurb":"Bright, garlicky herb sauce. No cooking — just chop and mix. Best made 20+ minutes ahead so the flavors meld.","allergens":"none","ing":[{"g":null,"items":["1 cup fresh parsley, packed, roughly chopped","3 garlic cloves, minced","2 tbsp red wine vinegar","⅓ cup olive oil","½ tsp red pepper flakes","½ tsp dried oregano","½ tsp salt","¼ tsp black pepper"]}],"steps":[["Chop","Finely chop the parsley and garlic. Add both to a bowl."],["Mix","Stir in vinegar, olive oil, red pepper flakes, oregano, salt, and black pepper. Mix well."],["Rest","Let sit at room temp at least 20 minutes before serving. This is where the flavor develops."]],"notes":["Cut the vinegar to 1½ tbsp for a milder version.","Keeps in the fridge 4–5 days — flavor improves on day 2.","Food processor works, but pulse in short bursts. It bruises the parsley, darkens it, and it's easy to overshoot into purée. Chimichurri is meant to be rustic — stop before it looks smooth."],"related":[]},{"id":22,"title":"Air Fryer Baked Potato","cuisine":"American","method":"Air Fryer","time":"40 min","level":"Beginner","serves":"Serves 2","blurb":"Crisp skin, fluffy interior. Mostly hands-off.","allergens":"dairy (toppings)","ing":[{"g":null,"items":["2 russet potatoes, medium","1 tbsp olive oil","1 tsp kosher salt","¼ tsp black pepper","Butter, sour cream, shredded cheese, to serve"]}],"steps":[["Dry thoroughly","Scrub and dry completely. Any surface water steams the skin instead of crisping it."],["Poke","Pierce each potato several times with a fork to let steam escape."],["Season","Rub all over with olive oil, then salt and pepper."],["Cook","400°F for 35–40 min, flipping halfway."],["Check","A fork should slide into the center with no resistance."],["Serve","Split open, fluff with a fork, top as you like."]],"notes":["Russets are the right potato. Yukon Gold and red potatoes come out denser and waxier, not fluffy.","Walmart sells russets in 5 lb bags in produce, which is the cheap way to buy them."],"related":[1,6]},{"id":23,"title":"Air Fryer Frozen Broccoli","cuisine":"American","method":"Air Fryer","time":"13 min","level":"Beginner","serves":"Serves 2","blurb":"Roasted, not steamed. Cook it straight from frozen.","allergens":"dairy (parmesan, optional)","ing":[{"g":null,"items":["12 oz frozen broccoli florets","1 tbsp olive oil","½ tsp garlic powder","½ tsp salt","¼ tsp black pepper","2 tbsp grated parmesan (optional)"]}],"steps":[["Toss frozen","Straight from the freezer, toss with oil, garlic powder, salt, and pepper."],["Cook","400°F for 12–13 min total, shaking the basket at the halfway mark."],["Finish","Parmesan over the top in the last 2 min if using."]],"notes":["Three mistakes, in order of how badly they ruin it: don't thaw first (waterlogged, will never brown), don't crowd the basket (steams instead of roasts), and don't drop the temperature (400°F is what drives off the ice and browns the edges)."],"related":[24]},{"id":24,"title":"Air Fryer Frozen Shrimp","cuisine":"American","method":"Air Fryer","time":"20 min","level":"Beginner","serves":"Serves 2","blurb":"Juicy shrimp in under 10 minutes of cook time. Built for a rice bowl.","allergens":"shellfish","ing":[{"g":null,"items":["12 oz frozen shrimp (deveined, tails off)","1 tbsp olive oil or melted butter","½ tsp garlic powder","½ tsp paprika","½ tsp salt","¼ tsp black pepper","1 tbsp lemon juice (optional, for serving)"]}],"steps":[["Thaw","Colander under cold running water 5–7 min until fully thawed. Pat completely dry — this is the difference between texture and steam."],["Season","Toss the dry shrimp with oil, garlic powder, paprika, salt, and pepper. Every shrimp evenly coated."],["Preheat","Air fryer to 400°F for 3 min."],["Cook","Single layer, no stacking. 400°F for 8 min, flipping at 4 min. Done when pink, opaque, and curled into a loose C."],["Serve","Lemon juice over the top if using. Serve immediately over rice and veggies."]],"notes":["Doneness by shape: loose C is perfect, tight O is overcooked, straight is undercooked.","Large (21–25 count) or jumbo (16–20 count) work best.","Rice bowl timing: rice first (15–20 min), then veggies in the air fryer, shrimp last — it turns rubbery sitting around.","Fast sauces: mayo + sriracha, or soy sauce + a little honey. Both under a minute.","Seasoning swap: 1 tsp Old Bay, Italian seasoning, or Cajun in place of the paprika and garlic powder."],"related":[23]},{"id":25,"title":"Blueberry Banana Overnight Oats","cuisine":"American","method":"No-Cook","time":"5 min + 6 hrs","level":"Beginner","serves":"Serves 1","blurb":"No-cook breakfast, assembled the night before. Roughly 15 g protein.","allergens":"peanut, dairy, oats","ing":[{"g":null,"items":["½ cup rolled oats","½ cup milk","1 scoop vanilla protein powder","1 tbsp peanut butter","1 banana, sliced","¼ cup blueberries","1 tsp honey or maple syrup (optional)"]}],"steps":[["Make the base","Stir milk, protein powder, and peanut butter together first, until smooth. Doing this before the oats go in is what stops it going lumpy."],["Add oats","Stir in rolled oats until fully coated."],["Fold in fruit","Sliced banana and blueberries. Sweetener if using."],["Chill","Cover, refrigerate at least 6 hours or overnight."],["Serve","Straight from the jar. Splash of milk if it's too thick."]],"notes":["Batch-prep 2–3 jars at once — they hold fine for 3 days and make grab-and-go breakfasts trivial.","Frozen blueberries work and are cheaper; they'll bleed a little colour into the oats overnight, which is cosmetic only."],"related":[]},{"id":26,"title":"Slow Cooker Beef Stew","cuisine":"American","method":"Slow Cooker","time":"8 hrs","level":"Beginner","serves":"Serves 1 (with leftovers)","blurb":"Load it and leave it. The one recipe that strains a 2-quart cooker.","allergens":"none","ing":[{"g":null,"items":["1 lb beef stew meat (chuck roast)","2 cups beef broth","2 medium russet potatoes, cubed (~400 g)","2 carrots, sliced into rounds (~150 g)","½ yellow onion, chopped (~75 g)","1 tsp garlic powder","Salt & pepper to taste"]}],"steps":[["Load","All ingredients into the slow cooker."],["Stir","Briefly, to combine."],["Cook","LOW 8 hrs."],["Serve","Stir before serving."]],"notes":["Chuck roast is the cut — it's what makes stew meat worth the 8 hours.","On HIGH: 4–5 hrs.","Too thin? Stir in 1 tsp cornstarch + 1 tbsp water in the last 30 min.","2-quart slow cooker: this one is a tight fit. Halve the vegetables or use a 4–6 qt cooker.","Prep ahead: cube the potatoes the night before and store them submerged in water in the fridge, then dump them in come morning."],"related":[16,27]},{"id":27,"title":"Slow Cooker Beef Chili","cuisine":"American","method":"Slow Cooker","time":"6–8 hrs","level":"Beginner","serves":"Serves 1 (with leftovers)","blurb":"Brown the beef the night before and this becomes a genuinely two-minute morning.","allergens":"dairy (cheese)","ing":[{"g":null,"items":["1 lb ground beef (80/20)","1 can diced tomatoes (with liquid)","1 can kidney beans, drained","1 can tomato sauce","1 packet chili seasoning","Shredded cheese, to serve"]}],"steps":[["Brown beef","Skillet over medium heat, 4–5 min. Drain the fat."],["Transfer","Beef into the slow cooker."],["Add the rest","Remaining ingredients. Stir."],["Cook","LOW 6–8 hrs."],["Serve","Top with shredded cheese."]],"notes":["Brown the beef the night before, refrigerate, and add it in the morning — this is the only step standing between you and a two-minute morning.","On HIGH: 3–4 hrs.","Tomato sauce sometimes comes in 8 oz cans — get the 15 oz."],"related":[20,26]},{"id":28,"title":"Ninja Creami Classic Vanilla","cuisine":"Dessert","method":"Ninja Creami","time":"24 hrs + 5 min","level":"Beginner","serves":"Serves 2 (1 pint)","blurb":"Rich, creamy vanilla base. The right first Creami recipe — no cooking.","allergens":"dairy","ing":[{"g":null,"items":["150 g sweetened condensed milk","60 g heavy cream","240 g whole milk","1 tsp vanilla extract"]}],"steps":[["Mix","Condensed milk and heavy cream into the Creami pint. Whisk to combine. Add milk and vanilla. Whisk until smooth."],["Freeze","Lid on. Freeze on a level surface 24 hrs minimum. Must be completely solid."],["Prep","Sit at room temp 5 min. If the top is domed, run the outside under warm water briefly."],["Spin","ICE CREAM setting. If crumbly, hit RE-SPIN."],["Serve","Scoop. Store leftovers in the freezer with the lid on."]],"notes":["Condensed milk is doing double duty — sweetener and freeze-point control. It's why this doesn't come out a solid brick. Drop to 125 g if you don't love sweet, up to 175 g if you do.","Stay 1 cm below the max fill line. Overfill and the machine struggles.","Variations: 2 tbsp cocoa powder before freezing for chocolate. Almond extract instead of vanilla. Mix-ins go in on the MIX-IN setting after the first spin."],"related":[29,30]},{"id":29,"title":"Ninja Creami Yakult","cuisine":"Dessert","method":"Ninja Creami","time":"24 hrs + 5 min","level":"Beginner","serves":"Serves 2 (1 pint)","blurb":"Tangy, creamy, refreshing — nostalgic Yakult in scoopable form.","allergens":"dairy","ing":[{"g":null,"items":["195 g Yakult (3 bottles — each is 65 mL/65 g)","150 g half & half","80 g sweetened condensed milk","5 g lemon juice"]}],"steps":[["Combine","Everything into the pint. Whisk until smooth — creamy, not frothy. Let it settle a minute if needed."],["Freeze","Lid on. Freeze 24 hrs on a level surface."],["Prep","Sit at room temp 5 min. Flatten a domed top with warm water if needed."],["Spin","LITE ICE CREAM setting. RE-SPIN if crumbly."],["Serve","Scoop immediately for soft-serve, or refreeze 20–30 min for firmer."]],"notes":["Three bottles fits a 16 oz pint exactly.","The lemon juice sharpens the Yakult tang — it reads as flat without it."],"related":[28,30]},{"id":30,"title":"Ninja Creami Cheetos Milkshake","cuisine":"Dessert","method":"Ninja Creami","time":"24 hrs + 5 min","level":"Intermediate","serves":"Serves 2 (1 pint)","blurb":"A home version of Baskin Robbins Korea's 치토스 밀크쉐이크 — milkshake and cheese ice cream at once, with chocolate and Cheetos through it.","allergens":"dairy, wheat (Cheetos), soy","ing":[{"g":null,"items":["60 g cream cheese, softened","240 g whole milk","60 g heavy cream","80 g sweetened condensed milk","½ tsp vanilla extract","2 tbsp mini chocolate chips (mix-in)","½ cup Cheetos Puffs (mix-in)"]}],"steps":[["Smooth the cream cheese","Whisk softened cream cheese with a splash of the milk until completely lump-free before adding anything else. Lumps here never resolve."],["Build the base","Whisk in remaining milk, heavy cream, condensed milk, and vanilla until smooth."],["Freeze","Lid on, level surface, 24 hrs. Completely solid."],["Prep","Sit on the counter 5 min."],["Spin","LITE ICE CREAM setting. If crumbly, add a splash of milk and RE-SPIN."],["Mix in","Dig a well in the center. Add chocolate chips and Cheetos Puffs. Run the MIX-IN setting."],["Serve","Immediately."]],"notes":["Cheetos Puffs, not Crunchy — the puffs are much closer to the Cheetos balls in the original.","Serve immediately. The Cheetos soften fast once they're in; this is the one Creami recipe that doesn't keep. Add them at the mix-in stage, never to the base.","The cream cheese is what captures both halves of the original flavor — the milkshake and the cheese ice cream — in a single base."],"related":[28,29]},{"id":31,"title":"Kimchi Fried Rice (Kimchi Bokkeumbap)","cuisine":"Korean","method":"Stovetop","time":"15 min","level":"Beginner","serves":"Serves 1","blurb":"Ground pork, sour kimchi, and cold rice in one pan, finished with a runny fried egg. The best thing to do with kimchi that's gone too sour to eat straight.","allergens":"pork, soy, wheat (gochujang), egg, sesame","ing":[{"g":null,"items":["150 g ground pork","150 g napa cabbage kimchi, well-fermented, roughly chopped","2 tbsp kimchi juice, from the jar","250 g cooked white rice, cold (day-old)","1 tbsp neutral oil","2 tsp gochujang (Korean chili paste)","1 tsp soy sauce","1 tsp sugar","1 tsp toasted sesame oil","1 large egg","1 green onion stalk, thinly sliced"]}],"steps":[["Break up the rice","Take the cold rice out of the fridge and break the clumps apart with your fingers or a fork until the grains are loose. Cold rice fries; warm rice turns to paste."],["Brown the pork","Neutral oil in a large skillet over medium-high. Add the pork and break it up. Cook 5 min until no pink remains and the edges are browned. Don't drain the fat — it carries the flavor."],["Fry the kimchi","Add the chopped kimchi. Cook 3–4 min, stirring, until it darkens and smells sweet rather than raw. This is the step most people rush, and it's where the flavor comes from."],["Bloom the seasoning","Push everything to one side. Gochujang, soy sauce, and sugar into the bare pan. Stir 30 seconds until fragrant, then mix through the pork and kimchi."],["Add the rice","Toss until every grain is coated orange-red. Pour in the kimchi juice and keep tossing 2–3 min. Press the rice flat for the last minute to get a few crispy bits."],["Fry the egg","Push the rice aside or use a second small pan. Fry the egg over medium heat 2–3 min, white set and yolk still runny."],["Finish","Off the heat, drizzle the sesame oil over the rice and toss once. Plate it, egg on top, green onion scattered over. Break the yolk into the rice as you eat."]],"notes":["Sour kimchi is correct kimchi here. Fizzy, soft, past-its-prime kimchi has the depth this dish is built on. Fresh kimchi tastes flat and stays crunchy. If yours is still mild, leave the open jar at room temperature 1–2 days first.","No day-old rice? Spread fresh rice in a thin layer on a plate and refrigerate uncovered 30 min. Do not skip this — fresh rice gives you a wet clump.","Sesame oil goes in off the heat. It scorches over direct flame and turns bitter.","Shopping: gochujang is at Walmart in the international aisle. Kimchi is in refrigerated produce near the tofu, though H Mart has better selection and faster turnover.","Swaps: Spam (150 g, diced, browned first) or bacon in place of the pork. Skip the protein entirely and it still works — add an extra ½ tsp sesame oil."],"related":[2,34]},{"id":32,"title":"Overnight Sourdough Bread (Pizza Stone)","cuisine":"Baking","method":"Oven","time":"2 days, mostly hands-off","level":"Beginner","serves":"Makes 1 loaf (~12 slices)","blurb":"Mix and fold today, bake tomorrow. Steam under a hot pizza stone gives you a crackly crust without a Dutch oven. 70% hydration, 20% starter.","allergens":"wheat","ing":[{"g":null,"items":["500 g bread flour","350 g water, room temperature","100 g active sourdough starter, fed and bubbly","10 g fine sea salt"]}],"steps":[["Feed the starter","The morning before you plan to mix, feed your starter and let it sit at room temperature until doubled, domed, and full of bubbles — usually 4–6 hours. It's ready when a spoonful dropped in water floats."],["Mix","Combine the water and starter in a large bowl, stirring until the starter loosens into the water. Add the flour and mix by hand until no dry flour remains — shaggy and rough, not smooth. Cover and rest 30 min."],["Add the salt","Sprinkle the salt over the dough with a small splash of water. Squeeze and fold in the bowl about 2 minutes until the salt disappears and the dough feels smoother."],["Stretch and fold","Over the next 2 hours, do 4 sets of folds, 30 minutes apart: wet one hand, grab a side of the dough, stretch it up and fold it over the top; turn the bowl a quarter turn and repeat 3 more times per set. Cover between sets."],["Finish bulk rise","After the last fold, cover and leave at room temperature until the dough looks puffy and jiggly and has grown by about half — roughly 2–3 more hours, longer in a cool kitchen."],["Shape the loaf","Turn the dough onto a lightly floured counter. Pull the edges underneath itself repeatedly, rotating as you go, until you have a tight ball with a taut surface."],["Cold rise overnight","Place seam-side up in a flour-dusted bowl lined with a clean kitchen towel, or a floured banneton. Cover and refrigerate 12–15 hours."],["Preheat the stone","Next day, set the pizza stone on a middle rack with a metal pan or cast iron skillet on a lower rack. Preheat to 475°F for at least 45 minutes — the stone needs time to heat through. Put a kettle on near the end of that window."],["Score and load","Take the dough straight from the fridge; cold dough scores cleaner. Turn it onto parchment, dust the top with flour, and slash about ½ inch deep with a sharp knife or razor. Slide parchment and dough onto the hot stone."],["Steam and bake","Working quickly with an oven mitt, pour 1 cup of just-boiled water into the pan below — it billows steam fast, so stand back. Shut the door immediately and bake 20 minutes."],["Finish baking","Remove the steam pan. Bake 20–25 minutes more, until the crust is deep golden-brown and the loaf sounds hollow when you tap the bottom."],["Cool completely","Move to a wire rack and cool at least 1 hour before slicing. It's still cooking from residual heat — cutting early makes the crumb gummy."]],"notes":["Bread flour gives the best structure and chew; all-purpose works as a 1:1 swap with a slightly softer crumb.","No scale? 10 g salt is roughly 1½–2 tsp fine sea salt. Weighing is worth it for bread — volume varies a lot by grain size.","The steam step is intense. Oven mitt on, stand back when you pour.","Kitchen temperature moves fermentation more than the clock does. Go by how puffy and jiggly the dough looks, not the exact minute.","Keeps cut-side-down at room temp 2–3 days, or slice and freeze what you won't eat soon.","First loaf doesn't need to look perfect — a lopsided crack or uneven crumb won't affect the taste."],"related":[]},{"id":33,"title":"Sticky Honey Garlic Chicken Bites","cuisine":"Asian","method":"Stovetop","time":"20 min","level":"Beginner","serves":"Serves 2","blurb":"Bite-sized thighs seared hard, then tossed in a honey-soy glaze that reduces onto the chicken in about 90 seconds. One pan. The fast counterpart to #17.","allergens":"soy, wheat (soy sauce), sesame","ing":[{"g":null,"items":["360 g (0.8 lb) boneless skinless chicken thighs, cut into 1-inch chunks","1 tbsp cornstarch","¼ tsp salt","¼ tsp black pepper","1 tbsp neutral oil (vegetable or canola)","3 tbsp honey","2 tbsp soy sauce","2 tsp minced garlic, from the jar","1 tbsp water","1 tsp rice vinegar","1 green onion, thinly sliced","1 tsp toasted sesame seeds"]}],"steps":[["Prep the chicken","Cut the thighs into 1-inch chunks and pat dry with paper towels. Wet chicken steams instead of browning. Toss with cornstarch, salt, and pepper until every piece has a thin dusty coating."],["Mix the sauce","Stir together honey, soy sauce, garlic, water, and rice vinegar in a small bowl. Set it next to the stove — once the chicken is cooked this moves fast."],["Sear the first side","Heat the oil in a large skillet over medium-high until it shimmers. Add the chicken in a single layer, not crowded. Leave it alone for 4 minutes — moving it early tears the crust off."],["Finish cooking","Flip the pieces and cook 3–4 more minutes until browned all over and cooked through (165°F, or cut one open — no pink)."],["Glaze","Turn the heat down to medium-low. This matters: honey scorches on high heat and turns bitter. Pour the sauce in and toss constantly for 60–90 seconds until it goes from watery to glossy and clings to the chicken."],["Serve","Off the heat. Scatter green onion and sesame seeds over the top. Serve over white rice and spoon any glaze left in the pan over it."]],"notes":["Cornstarch goes on the chicken, not in the sauce — it does both jobs at once. It gives you a browned crust in the pan, and the starch that comes loose is what thickens the glaze. No separate slurry.","The rice vinegar isn't optional in spirit. 3 tbsp honey with nothing sharp against it tastes flat and cloying. A squeeze of lemon works if you don't have it.","0.8 lb is a small batch for a big skillet, which is good — crowding is the main failure mode. Past 1.5 lbs, sear in two batches.","Heat variation: ½ tsp gochujang or a squirt of sriracha into the sauce.","Want it hands-off instead? That's #17."],"related":[17]},{"id":34,"title":"Simple Budae Jjigae (Army Stew)","cuisine":"Korean","method":"Stovetop","time":"25 min","level":"Beginner","serves":"Serves 1","blurb":"One-pot Korean army stew — Spam, hot dog, kimchi, baked beans, and ramen noodles in a medium-spicy broth, finished with melted cheese.","allergens":"pork, wheat, soy, dairy, egg (check the ramen)","ing":[{"g":"The pot","items":["100 g Spam, sliced into bite-size pieces","1 hot dog, sliced on a diagonal","100 g napa cabbage kimchi, chopped","2 tbsp kimchi juice, from the jar","¼ cup canned baked beans","30 g yellow onion, sliced","350 mL water or chicken broth"]},{"g":"Sauce","items":["1 tbsp gochujang (Korean chili paste)","1 tsp gochugaru (Korean chili flakes)","1 tsp soy sauce","1 tsp minced garlic","½ tsp sugar"]},{"g":"To finish","items":["½ instant ramen noodle brick (set the seasoning packet aside)","1 American cheese slice","1 green onion stalk, sliced"]}],"steps":[["Mix the sauce","In a small bowl, stir the gochujang, gochugaru, soy sauce, garlic, and sugar together with a splash of the water or broth until smooth."],["Arrange the pot","In a shallow pot or skillet, arrange the Spam, hot dog, kimchi, baked beans, and onion in sections rather than mixing them together. This is the classic budae jjigae look, and it makes it easier to fish out what you want first."],["Add sauce and liquid","Spoon the sauce mixture over the top. Pour the water or broth and the kimchi juice in around the edges."],["Simmer","Bring to a boil over medium-high heat, then reduce to a simmer for 8–10 minutes so the flavors meld and the kimchi softens."],["Add noodles","Nestle in the ramen brick. Simmer 3–4 minutes, separating the noodles with chopsticks or tongs as they soften, until just tender."],["Melt the cheese","Lay the cheese slice on top of the noodles. Turn off the heat and let it melt for a minute before serving."],["Garnish and serve","Scatter the green onion over the top. Serve straight from the pot, bubbling."]],"notes":["Shopping: Walmart has Spam, hot dogs, baked beans, ramen, and American cheese. Gochujang and gochugaru are in Walmart's international aisle in a pinch, but H Mart has better selection. Kimchi: Walmart's refrigerated international section or H Mart.","No baked beans on hand? Skip them. They're a common Americanized addition, not traditional.","Rice cakes (tteok) or sliced Korean fish cake are classic add-ins if you want to expand it later.","Freeze the unused ramen half for next time.","Scales up cleanly to a shared pot — multiply everything and use a wider pan so it isn't crowded."],"related":[31]}];
+
+const CUE = {
+  Korean:"#9e4a2c", Japanese:"#2f5d4e", Asian:"#a8791f", Italian:"#5f7233",
+  Mexican:"#8a5a9e", Argentine:"#3f6b7a", American:"#7a6a55",
+  Baking:"#6b4f2a", Dessert:"#b04a7a"
+};
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const byId = new Map(RECIPES.map(r=>[r.id,r]));
+
+let state = { q:"", cuisine:null, method:null };
+
+const cuisines = [...new Set(RECIPES.map(r=>r.cuisine))].sort();
+const methods  = [...new Set(RECIPES.map(r=>r.method))].sort();
+
+function buildChips(host, values, key){
+  values.forEach(v=>{
+    const b=document.createElement("button");
+    b.className="chip"; b.textContent=v; b.setAttribute("aria-pressed","false");
+    b.onclick=()=>{ state[key] = state[key]===v ? null : v; render(); };
+    b.dataset.key=key; b.dataset.val=v;
+    host.appendChild(b);
+  });
+}
+buildChips(document.getElementById("fCuisine"), cuisines, "cuisine");
+buildChips(document.getElementById("fMethod"), methods, "method");
+
+RECIPES.forEach(r=>{
+  r._h = [r.title, r.cuisine, r.method, r.blurb, r.allergens,
+          ...r.ing.flatMap(g=>g.items), ...r.steps.flat(), ...(r.notes||[])]
+         .join(" ").toLowerCase();
+});
+
+function matches(r){
+  if(state.cuisine && r.cuisine!==state.cuisine) return false;
+  if(state.method && r.method!==state.method) return false;
+  if(state.q && !r._h.includes(state.q)) return false;
+  return true;
+}
+
+const idsHost=document.getElementById("ids");
+RECIPES.forEach(r=>{
+  const b=document.createElement("button");
+  b.className="id"; b.textContent=r.id; b.style.setProperty("--cue",CUE[r.cuisine]||"#7a8480");
+  b.title=r.title; b.dataset.id=r.id;
+  b.onclick=()=>{ if(b.dataset.off!=="1") goToRecipe(r.id); };
+  idsHost.appendChild(b);
+});
+
+function render(){
+  document.querySelectorAll(".chip[data-key]").forEach(c=>{
+    c.setAttribute("aria-pressed", String(state[c.dataset.key]===c.dataset.val));
+  });
+
+  const list = RECIPES.filter(matches);
+  const shown = new Set(list.map(r=>r.id));
+  idsHost.querySelectorAll(".id").forEach(el=>{
+    el.dataset.off = shown.has(+el.dataset.id) ? "0" : "1";
+  });
+
+  document.getElementById("count").textContent =
+    list.length === RECIPES.length
+      ? `All ${RECIPES.length} recipes`
+      : `${list.length} of ${RECIPES.length} recipes`;
+
+  const grid=document.getElementById("grid");
+  if(!list.length){
+    grid.innerHTML = `<div class="empty"><b>Nothing matches yet</b>Try a different word, or reset the filters above.</div>`;
+    return;
+  }
+  grid.innerHTML = list.map(r=>`
+    <button class="card" data-id="${r.id}" style="--cue:${CUE[r.cuisine]||"#7a8480"}">
+      <div class="card-top">
+        <span class="card-id">${String(r.id).padStart(2,"0")}</span>
+        <span class="card-cuisine">${esc(r.cuisine)}</span>
+      </div>
+      <h2>${esc(r.title)}</h2>
+      <p>${esc(r.blurb)}</p>
+      <div class="card-meta">
+        <span>${esc(r.method)}</span><span>${esc(r.time)}</span>
+        <span>${esc(r.level)}</span><span>${esc(r.serves)}</span>
+      </div>
+    </button>`).join("");
+  grid.querySelectorAll(".card").forEach(c=> c.onclick=()=>goToRecipe(+c.dataset.id));
+}
+
+/* ---------------- routing ----------------
+   The URL hash is the single source of truth for which recipe is open.
+   Opening pushes a history entry, so the Android back button and the
+   browser back button both close the panel instead of leaving the site. */
+
+const scrim=document.getElementById("scrim"),
+      panel=document.getElementById("panel"),
+      wrap =document.getElementById("wrap");
+let lastFocus=null, pushed=0, currentId=null;
+
+function goToRecipe(id){
+  if(!byId.has(id)) return;
+  lastFocus = document.activeElement;
+  pushed++;
+  location.hash = "r"+id;      // fires hashchange -> syncFromHash
+}
+function leaveRecipe(){
+  if(pushed>0){ pushed--; history.back(); }
+  else {
+    history.replaceState(null,"",location.pathname+location.search);
+    hidePanel();
+  }
+}
+function syncFromHash(){
+  const m = /^#r(\d+)$/.exec(location.hash);
+  const id = m ? +m[1] : null;
+  if(id!==null && byId.has(id)) showPanel(id);
+  else hidePanel();
+}
+window.addEventListener("hashchange", syncFromHash);
+
+function showPanel(id){
+  const r=byId.get(id);
+  currentId=id;
+  document.title = r.title + " — The Cookbook";
+  document.getElementById("pId").textContent="No. "+String(r.id).padStart(2,"0");
+  document.getElementById("pCuisine").textContent=r.cuisine;
+  document.getElementById("pBody").innerHTML=`
+    <h2 id="pTitle">${esc(r.title)}</h2>
+    <p class="blurb">${esc(r.blurb)}</p>
+    <div class="statline">
+      <span>${esc(r.method)}</span><span>${esc(r.time)}</span>
+      <span>${esc(r.level)}</span><span>${esc(r.serves)}</span>
+      <span>Contains: ${esc(r.allergens)}</span>
+    </div>
+    ${r.locked ? `<div class="locked"><b>About these amounts</b>${esc(r.locked)}</div>` : ""}
+    <div class="sect">Ingredients</div>
+    ${r.ing.map(g=>`
+      ${g.g ? `<div class="ig">${esc(g.g)}</div>` : ""}
+      <ul class="ing">${g.items.map(i=>`<li>${esc(i)}</li>`).join("")}</ul>
+    `).join("")}
+    <div class="sect">Method</div>
+    <ol class="steps">${r.steps.map(s=>`<li><strong>${esc(s[0])}</strong><span>${esc(s[1])}</span></li>`).join("")}</ol>
+    ${(r.notes&&r.notes.length)?`
+      <div class="sect">Notes</div>
+      <ul class="notes">${r.notes.map(n=>`<li>${esc(n)}</li>`).join("")}</ul>`:""}
+    ${(r.related&&r.related.length)?`
+      <div class="sect">Goes with</div>
+      <div class="rel">${r.related.map(rid=>{
+        const o=byId.get(rid); return o?`<button data-go="${rid}">${String(rid).padStart(2,"0")} · ${esc(o.title)}</button>`:"";
+      }).join("")}</div>`:""}`;
+  panel.querySelectorAll("[data-go]").forEach(b=> b.onclick=()=>goToRecipe(+b.dataset.go));
+
+  const wasOpen = panel.dataset.open==="1";
+  scrim.dataset.open="1"; panel.dataset.open="1";
+  wrap.inert=true;
+  panel.scrollTop=0;
+  document.body.style.overflow="hidden";
+  resetShareLabel();
+  if(!wasOpen || document.activeElement===document.body){
+    document.getElementById("pClose").focus();
+  }
+}
+function hidePanel(){
+  if(panel.dataset.open!=="1"){ document.title="The Cookbook"; return; }
+  currentId=null;
+  scrim.dataset.open="0"; panel.dataset.open="0";
+  wrap.inert=false;
+  document.body.style.overflow="";
+  document.title="The Cookbook";
+  if(lastFocus && document.contains(lastFocus)) lastFocus.focus();
+}
+
+/* focus trap — inert handles most of it, this covers the wrap-around */
+panel.addEventListener("keydown", e=>{
+  if(e.key!=="Tab") return;
+  const f=[...panel.querySelectorAll('button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])')]
+          .filter(el=>el.offsetParent!==null);
+  if(!f.length) return;
+  const first=f[0], last=f[f.length-1];
+  if(e.shiftKey && document.activeElement===first){ e.preventDefault(); last.focus(); }
+  else if(!e.shiftKey && document.activeElement===last){ e.preventDefault(); first.focus(); }
+});
+
+scrim.onclick=leaveRecipe;
+document.getElementById("pClose").onclick=leaveRecipe;
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape" && panel.dataset.open==="1") leaveRecipe();
+});
+
+/* copy a direct link to the open recipe */
+const shareBtn=document.getElementById("pShare");
+function resetShareLabel(){ shareBtn.textContent="Copy link"; }
+shareBtn.onclick=async ()=>{
+  if(currentId===null) return;
+  const url=location.origin+location.pathname+location.search+"#r"+currentId;
+  try{
+    if(navigator.share){ await navigator.share({title:byId.get(currentId).title, url}); return; }
+    await navigator.clipboard.writeText(url);
+    shareBtn.textContent="Copied";
+    setTimeout(resetShareLabel,1600);
+  }catch(err){
+    shareBtn.textContent="Copy failed";
+    setTimeout(resetShareLabel,1600);
+  }
+};
+
+document.getElementById("q").oninput=e=>{ state.q=e.target.value.trim().toLowerCase(); render(); };
+document.getElementById("fClear").onclick=()=>{
+  state={q:"",cuisine:null,method:null};
+  document.getElementById("q").value=""; render();
+};
+const fToggle=document.getElementById("fToggle"), filters=document.getElementById("filters");
+fToggle.onclick=()=>{
+  const open = filters.dataset.open==="1";
+  filters.dataset.open = open ? "0" : "1";
+  fToggle.setAttribute("aria-expanded", String(!open));
+  fToggle.textContent = open ? "Filter" : "Hide filters";
+};
+if(window.matchMedia("(max-width:640px)").matches) filters.dataset.open="0";
+
+document.getElementById("tTotal").textContent=RECIPES.length;
+document.getElementById("tCuisine").textContent=cuisines.length;
+document.getElementById("tMethod").textContent=methods.length;
+render();
+syncFromHash();
+
+if("serviceWorker" in navigator && location.protocol.startsWith("http")){
+  window.addEventListener("load",()=>{
+    navigator.serviceWorker.register("sw.js").catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>

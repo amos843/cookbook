@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Cookbook</title>
+<meta name="description" content="A small collection of beginner-friendly recipes, mostly cooked for one, from ingredients you can find at one grocery run.">
+<meta name="theme-color" content="#edeee7">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Cookbook">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#16211d; --rice:#edeee7; --bone:#fcfbf7;
+  --jade:#2f5d4e; --sesame:#a8791f;
+  --mute:#7a8480; --line:#d9dcd3; --line2:#e8eae2;
+  --display:"Fraunces",Georgia,serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--rice); color:var(--ink);
+  font-family:var(--body); font-size:15px; line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+:focus-visible{outline:2px solid var(--jade); outline-offset:2px; border-radius:3px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px 80px}
+[inert]{pointer-events:none}
+
+/* ---------- masthead ---------- */
+.mast{padding:38px 0 22px;border-bottom:1px solid var(--line)}
+.mast h1{
+  font-family:var(--display);font-weight:600;font-size:clamp(36px,7.5vw,62px);
+  letter-spacing:-.02em;line-height:.98;margin:0 0 14px
+}
+.intro{max-width:52ch;font-size:15px;line-height:1.62;color:#3f4a45;margin:0 0 16px}
+.tally{
+  display:flex;flex-wrap:wrap;gap:6px 18px;
+  font-family:var(--mono);font-size:11.5px;color:var(--mute)
+}
+.tally b{color:var(--ink);font-weight:600}
+
+/* ---------- controls ---------- */
+.controls{padding:22px 0 16px}
+.search{
+  width:100%;padding:12px 14px;font-family:var(--body);font-size:16px;color:var(--ink);
+  background:var(--bone);border:1px solid var(--line);border-radius:3px
+}
+.search::placeholder{color:var(--mute)}
+.filterset{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;align-items:center}
+.flabel{font-family:var(--mono);font-size:11px;color:var(--mute);margin-right:4px}
+.chip{
+  font-family:var(--body);font-size:12.5px;padding:6px 12px;cursor:pointer;
+  background:transparent;border:1px solid var(--line);border-radius:100px;color:var(--ink);
+  transition:background .12s,border-color .12s,color .12s
+}
+.chip:hover{border-color:var(--jade)}
+.chip[aria-pressed="true"]{background:var(--jade);border-color:var(--jade);color:var(--bone)}
+.chip.clear{border-style:dashed;color:var(--mute)}
+
+/* filter drawer — collapsed by default on small screens */
+.fToggle{display:none}
+#filters{margin-top:4px}
+
+/* ---------- the ID index ---------- */
+.index{padding:18px 0 6px;border-top:1px solid var(--line2);margin-top:20px}
+.index-head{
+  display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:10px
+}
+.index-head span{font-family:var(--mono);font-size:11px;color:var(--mute)}
+.ids{display:flex;flex-wrap:wrap;gap:4px}
+.id{
+  font-family:var(--mono);font-size:12px;font-weight:500;
+  width:34px;height:32px;display:flex;align-items:center;justify-content:center;
+  background:var(--bone);border:1px solid var(--line);border-radius:2px;
+  color:var(--ink);cursor:pointer;padding:0;
+  border-bottom:2px solid var(--cue,var(--line));
+  transition:transform .1s,background .12s
+}
+.id:hover{background:#fff;transform:translateY(-1px)}
+.id[data-off="1"]{opacity:.24;cursor:default}
+.id[data-off="1"]:hover{transform:none;background:var(--bone)}
+
+/* ---------- grid ---------- */
+.count{
+  font-family:var(--mono);font-size:11.5px;
+  color:var(--mute);padding:26px 0 12px;border-top:1px solid var(--line2);margin-top:20px
+}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:12px}
+.card{
+  position:relative;text-align:left;background:var(--bone);border:1px solid var(--line);
+  border-radius:3px;padding:16px 16px 14px;cursor:pointer;font:inherit;color:inherit;
+  display:flex;flex-direction:column;gap:8px;
+  transition:transform .13s ease,box-shadow .13s ease,border-color .13s ease
+}
+.card:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(22,33,29,.09);border-color:var(--jade)}
+.card::before{
+  content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:var(--cue,var(--jade));border-radius:3px 0 0 3px
+}
+.card-top{display:flex;align-items:baseline;gap:9px}
+.card-id{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--sesame)}
+.card-cuisine{font-family:var(--mono);font-size:11px;color:var(--mute);margin-left:auto}
+.card h2{
+  font-family:var(--display);font-weight:600;font-size:19px;line-height:1.2;
+  letter-spacing:-.01em;margin:0
+}
+.card p{margin:0;font-size:13px;line-height:1.5;color:#48534e}
+.card-meta{
+  display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:auto;padding-top:8px;
+  border-top:1px solid var(--line2);
+  font-family:var(--mono);font-size:10.5px;color:var(--mute)
+}
+.empty{
+  padding:60px 20px;text-align:center;color:var(--mute);
+  border:1px dashed var(--line);border-radius:3px
+}
+.empty b{display:block;font-family:var(--display);font-size:20px;color:var(--ink);margin-bottom:6px}
+
+/* ---------- detail ---------- */
+.scrim{
+  position:fixed;inset:0;background:rgba(22,33,29,.42);z-index:40;
+  display:none;backdrop-filter:blur(2px)
+}
+.scrim[data-open="1"]{display:block}
+.panel{
+  position:fixed;z-index:50;background:var(--bone);display:none;
+  top:0;right:0;bottom:0;width:min(620px,100%);overflow-y:auto;
+  overscroll-behavior:contain;
+  border-left:1px solid var(--line);
+  animation:slide .22s cubic-bezier(.2,.7,.3,1)
+}
+.panel[data-open="1"]{display:block}
+@keyframes slide{from{transform:translateX(24px);opacity:.4}to{transform:none;opacity:1}}
+.panel-bar{
+  position:sticky;top:0;background:var(--bone);border-bottom:1px solid var(--line);
+  padding:12px 20px;display:flex;align-items:center;gap:12px;z-index:2
+}
+.panel-bar .pid{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--sesame)}
+.panel-bar .pcuisine{font-family:var(--mono);font-size:11px;color:var(--mute)}
+.barbtn{
+  background:transparent;border:1px solid var(--line);border-radius:3px;
+  height:34px;min-width:34px;padding:0 10px;cursor:pointer;color:var(--ink);
+  font-family:var(--body);font-size:12.5px;line-height:1
+}
+.barbtn:hover{border-color:var(--jade)}
+#pShare{margin-left:auto}
+#pCopied{
+  font-family:var(--mono);font-size:11px;color:var(--jade);margin-left:auto
+}
+.panel-body{padding:22px 20px 60px}
+.panel-body h2{
+  font-family:var(--display);font-weight:600;font-size:clamp(25px,5.4vw,33px);
+  line-height:1.1;letter-spacing:-.02em;margin:0 0 10px
+}
+.blurb{font-size:14.5px;line-height:1.6;color:#3f4a45;margin:0 0 16px}
+.statline{
+  display:flex;flex-wrap:wrap;gap:5px 14px;font-family:var(--mono);font-size:11px;
+  color:var(--mute);padding:11px 0;border-top:1px solid var(--line2);border-bottom:1px solid var(--line2)
+}
+.locked{
+  margin:16px 0 0;padding:12px 15px;border-radius:3px;font-size:12.5px;line-height:1.5;
+  background:#f3f1e9;border:1px solid var(--line);color:#5b635e
+}
+.locked b{color:var(--sesame);font-family:var(--mono);font-size:11px;display:block;margin-bottom:3px}
+.sect{
+  font-family:var(--display);font-size:15px;font-weight:600;
+  color:var(--jade);margin:28px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line2)
+}
+.ig{font-family:var(--body);font-size:12px;font-weight:600;color:var(--mute);margin:14px 0 6px}
+.ing{list-style:none;margin:0;padding:0}
+.ing li{
+  padding:6px 0 6px 18px;border-bottom:1px solid var(--line2);font-size:14px;position:relative
+}
+.ing li::before{content:"";position:absolute;left:2px;top:14px;width:5px;height:5px;border-radius:50%;background:var(--jade);opacity:.5}
+.steps{list-style:none;counter-reset:s;margin:0;padding:0}
+.steps li{counter-increment:s;padding:14px 0 14px 40px;border-bottom:1px solid var(--line2);position:relative}
+.steps li::before{
+  content:counter(s);position:absolute;left:4px;top:14px;
+  font-family:var(--mono);font-size:12px;font-weight:600;color:var(--sesame)
+}
+.steps strong{display:block;font-size:14px;font-weight:600;margin-bottom:3px}
+.steps span{font-size:14px;line-height:1.6;color:#3f4a45}
+.notes{margin:0;padding:0;list-style:none}
+.notes li{
+  font-size:13.5px;line-height:1.6;color:#3f4a45;padding:9px 0 9px 16px;
+  border-left:2px solid var(--line);margin-bottom:8px
+}
+.rel{display:flex;flex-wrap:wrap;gap:6px}
+.rel button{
+  font-family:var(--mono);font-size:11.5px;padding:6px 11px;cursor:pointer;color:var(--ink);
+  background:transparent;border:1px solid var(--line);border-radius:100px
+}
+.rel button:hover{border-color:var(--jade);background:#fff}
+
+.colophon{
+  margin-top:44px;padding-top:20px;border-top:1px solid var(--line);
+  font-size:13px;line-height:1.65;color:var(--mute);max-width:56ch
+}
+
+@media(max-width:640px){
+  .wrap{padding:0 15px 60px}
+  .mast{padding:26px 0 18px}
+  .grid{grid-template-columns:1fr}
+  .ids{flex-wrap:nowrap;overflow-x:auto;padding-bottom:8px;-webkit-overflow-scrolling:touch}
+  .id{flex:0 0 auto}
+  #idNote{display:none}
+  .panel{width:100%;border-left:0}
+  .panel-body{padding:20px 16px 70px}
+  .fToggle{
+    display:inline-block;margin-top:12px;font-family:var(--body);font-size:12.5px;
+    padding:8px 14px;background:transparent;border:1px solid var(--line);
+    border-radius:100px;color:var(--ink);cursor:pointer
+  }
+  #filters[data-open="0"]{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+  .card:hover{transform:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap" id="wrap">
+
+  <header class="mast">
+    <h1>The Cookbook</h1>
+    <p class="intro">
+      Recipes I actually cook, written down properly. Most are scaled for one person,
+      most use ingredients you can get in a single trip to Walmart, and none of them
+      assume you already know what you're doing. Cook whatever looks good.
+    </p>
+    <div class="tally">
+      <span><b id="tTotal">34</b> recipes</span>
+      <span><b id="tCuisine">9</b> cuisines</span>
+      <span><b id="tMethod">8</b> ways to cook them</span>
+    </div>
+  </header>
+
+  <div class="controls">
+    <input class="search" id="q" type="search" placeholder="Search recipes, ingredients, or notes…" autocomplete="off">
+    <button class="fToggle" id="fToggle" aria-expanded="false" aria-controls="filters">Filter</button>
+    <div id="filters" data-open="1">
+      <div class="filterset" id="fCuisine"><span class="flabel">Cuisine</span></div>
+      <div class="filterset" id="fMethod"><span class="flabel">Equipment</span></div>
+      <div class="filterset">
+        <button class="chip clear" id="fClear">Reset filters</button>
+      </div>
+    </div>
+  </div>
+
+  <section class="index">
+    <div class="index-head">
+      <span>Jump to a recipe</span>
+      <span id="idNote">colored by cuisine</span>
+    </div>
+    <div class="ids" id="ids"></div>
+  </section>
+
+  <div class="count" id="count" role="status"></div>
+  <div class="grid" id="grid"></div>
+
+  <p class="colophon">
+    Ingredient amounts are what worked in my kitchen, not gospel — taste as you go and
+    adjust. A few recipes note where an amount was a best guess rather than a tested
+    number. Check the ingredient list before you cook if you avoid anything.
+  </p>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<aside class="panel" id="panel" role="dialog" aria-modal="true" aria-labelledby="pTitle">
+  <div class="panel-bar">
+    <span class="pid" id="pId"></span>
+    <span class="pcuisine" id="pCuisine"></span>
+    <button class="barbtn" id="pShare">Copy link</button>
+    <button class="barbtn" id="pClose" aria-label="Close recipe">✕</button>
+  </div>
+  <div class="panel-body" id="pBody"></div>
+</aside>
+
+<script>
+const RECIPES = /*__RECIPES__*/;
+
+const CUE = {
+  Korean:"#9e4a2c", Japanese:"#2f5d4e", Asian:"#a8791f", Italian:"#5f7233",
+  Mexican:"#8a5a9e", Argentine:"#3f6b7a", American:"#7a6a55",
+  Baking:"#6b4f2a", Dessert:"#b04a7a"
+};
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const byId = new Map(RECIPES.map(r=>[r.id,r]));
+
+let state = { q:"", cuisine:null, method:null };
+
+const cuisines = [...new Set(RECIPES.map(r=>r.cuisine))].sort();
+const methods  = [...new Set(RECIPES.map(r=>r.method))].sort();
+
+function buildChips(host, values, key){
+  values.forEach(v=>{
+    const b=document.createElement("button");
+    b.className="chip"; b.textContent=v; b.setAttribute("aria-pressed","false");
+    b.onclick=()=>{ state[key] = state[key]===v ? null : v; render(); };
+    b.dataset.key=key; b.dataset.val=v;
+    host.appendChild(b);
+  });
+}
+buildChips(document.getElementById("fCuisine"), cuisines, "cuisine");
+buildChips(document.getElementById("fMethod"), methods, "method");
+
+RECIPES.forEach(r=>{
+  r._h = [r.title, r.cuisine, r.method, r.blurb, r.allergens,
+          ...r.ing.flatMap(g=>g.items), ...r.steps.flat(), ...(r.notes||[])]
+         .join(" ").toLowerCase();
+});
+
+function matches(r){
+  if(state.cuisine && r.cuisine!==state.cuisine) return false;
+  if(state.method && r.method!==state.method) return false;
+  if(state.q && !r._h.includes(state.q)) return false;
+  return true;
+}
+
+const idsHost=document.getElementById("ids");
+RECIPES.forEach(r=>{
+  const b=document.createElement("button");
+  b.className="id"; b.textContent=r.id; b.style.setProperty("--cue",CUE[r.cuisine]||"#7a8480");
+  b.title=r.title; b.dataset.id=r.id;
+  b.onclick=()=>{ if(b.dataset.off!=="1") goToRecipe(r.id); };
+  idsHost.appendChild(b);
+});
+
+function render(){
+  document.querySelectorAll(".chip[data-key]").forEach(c=>{
+    c.setAttribute("aria-pressed", String(state[c.dataset.key]===c.dataset.val));
+  });
+
+  const list = RECIPES.filter(matches);
+  const shown = new Set(list.map(r=>r.id));
+  idsHost.querySelectorAll(".id").forEach(el=>{
+    el.dataset.off = shown.has(+el.dataset.id) ? "0" : "1";
+  });
+
+  document.getElementById("count").textContent =
+    list.length === RECIPES.length
+      ? `All ${RECIPES.length} recipes`
+      : `${list.length} of ${RECIPES.length} recipes`;
+
+  const grid=document.getElementById("grid");
+  if(!list.length){
+    grid.innerHTML = `<div class="empty"><b>Nothing matches yet</b>Try a different word, or reset the filters above.</div>`;
+    return;
+  }
+  grid.innerHTML = list.map(r=>`
+    <button class="card" data-id="${r.id}" style="--cue:${CUE[r.cuisine]||"#7a8480"}">
+      <div class="card-top">
+        <span class="card-id">${String(r.id).padStart(2,"0")}</span>
+        <span class="card-cuisine">${esc(r.cuisine)}</span>
+      </div>
+      <h2>${esc(r.title)}</h2>
+      <p>${esc(r.blurb)}</p>
+      <div class="card-meta">
+        <span>${esc(r.method)}</span><span>${esc(r.time)}</span>
+        <span>${esc(r.level)}</span><span>${esc(r.serves)}</span>
+      </div>
+    </button>`).join("");
+  grid.querySelectorAll(".card").forEach(c=> c.onclick=()=>goToRecipe(+c.dataset.id));
+}
+
+/* ---------------- routing ----------------
+   The URL hash is the single source of truth for which recipe is open.
+   Opening pushes a history entry, so the Android back button and the
+   browser back button both close the panel instead of leaving the site. */
+
+const scrim=document.getElementById("scrim"),
+      panel=document.getElementById("panel"),
+      wrap =document.getElementById("wrap");
+let lastFocus=null, pushed=0, currentId=null;
+
+function goToRecipe(id){
+  if(!byId.has(id)) return;
+  lastFocus = document.activeElement;
+  pushed++;
+  location.hash = "r"+id;      // fires hashchange -> syncFromHash
+}
+function leaveRecipe(){
+  if(pushed>0){ pushed--; history.back(); }
+  else {
+    history.replaceState(null,"",location.pathname+location.search);
+    hidePanel();
+  }
+}
+function syncFromHash(){
+  const m = /^#r(\d+)$/.exec(location.hash);
+  const id = m ? +m[1] : null;
+  if(id!==null && byId.has(id)) showPanel(id);
+  else hidePanel();
+}
+window.addEventListener("hashchange", syncFromHash);
+
+function showPanel(id){
+  const r=byId.get(id);
+  currentId=id;
+  document.title = r.title + " — The Cookbook";
+  document.getElementById("pId").textContent="No. "+String(r.id).padStart(2,"0");
+  document.getElementById("pCuisine").textContent=r.cuisine;
+  document.getElementById("pBody").innerHTML=`
+    <h2 id="pTitle">${esc(r.title)}</h2>
+    <p class="blurb">${esc(r.blurb)}</p>
+    <div class="statline">
+      <span>${esc(r.method)}</span><span>${esc(r.time)}</span>
+      <span>${esc(r.level)}</span><span>${esc(r.serves)}</span>
+      <span>Contains: ${esc(r.allergens)}</span>
+    </div>
+    ${r.locked ? `<div class="locked"><b>About these amounts</b>${esc(r.locked)}</div>` : ""}
+    <div class="sect">Ingredients</div>
+    ${r.ing.map(g=>`
+      ${g.g ? `<div class="ig">${esc(g.g)}</div>` : ""}
+      <ul class="ing">${g.items.map(i=>`<li>${esc(i)}</li>`).join("")}</ul>
+    `).join("")}
+    <div class="sect">Method</div>
+    <ol class="steps">${r.steps.map(s=>`<li><strong>${esc(s[0])}</strong><span>${esc(s[1])}</span></li>`).join("")}</ol>
+    ${(r.notes&&r.notes.length)?`
+      <div class="sect">Notes</div>
+      <ul class="notes">${r.notes.map(n=>`<li>${esc(n)}</li>`).join("")}</ul>`:""}
+    ${(r.related&&r.related.length)?`
+      <div class="sect">Goes with</div>
+      <div class="rel">${r.related.map(rid=>{
+        const o=byId.get(rid); return o?`<button data-go="${rid}">${String(rid).padStart(2,"0")} · ${esc(o.title)}</button>`:"";
+      }).join("")}</div>`:""}`;
+  panel.querySelectorAll("[data-go]").forEach(b=> b.onclick=()=>goToRecipe(+b.dataset.go));
+
+  const wasOpen = panel.dataset.open==="1";
+  scrim.dataset.open="1"; panel.dataset.open="1";
+  wrap.inert=true;
+  panel.scrollTop=0;
+  document.body.style.overflow="hidden";
+  resetShareLabel();
+  if(!wasOpen || document.activeElement===document.body){
+    document.getElementById("pClose").focus();
+  }
+}
+function hidePanel(){
+  if(panel.dataset.open!=="1"){ document.title="The Cookbook"; return; }
+  currentId=null;
+  scrim.dataset.open="0"; panel.dataset.open="0";
+  wrap.inert=false;
+  document.body.style.overflow="";
+  document.title="The Cookbook";
+  if(lastFocus && document.contains(lastFocus)) lastFocus.focus();
+}
+
+/* focus trap — inert handles most of it, this covers the wrap-around */
+panel.addEventListener("keydown", e=>{
+  if(e.key!=="Tab") return;
+  const f=[...panel.querySelectorAll('button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])')]
+          .filter(el=>el.offsetParent!==null);
+  if(!f.length) return;
+  const first=f[0], last=f[f.length-1];
+  if(e.shiftKey && document.activeElement===first){ e.preventDefault(); last.focus(); }
+  else if(!e.shiftKey && document.activeElement===last){ e.preventDefault(); first.focus(); }
+});
+
+scrim.onclick=leaveRecipe;
+document.getElementById("pClose").onclick=leaveRecipe;
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape" && panel.dataset.open==="1") leaveRecipe();
+});
+
+/* copy a direct link to the open recipe */
+const shareBtn=document.getElementById("pShare");
+function resetShareLabel(){ shareBtn.textContent="Copy link"; }
+shareBtn.onclick=async ()=>{
+  if(currentId===null) return;
+  const url=location.origin+location.pathname+location.search+"#r"+currentId;
+  try{
+    if(navigator.share){ await navigator.share({title:byId.get(currentId).title, url}); return; }
+    await navigator.clipboard.writeText(url);
+    shareBtn.textContent="Copied";
+    setTimeout(resetShareLabel,1600);
+  }catch(err){
+    shareBtn.textContent="Copy failed";
+    setTimeout(resetShareLabel,1600);
+  }
+};
+
+document.getElementById("q").oninput=e=>{ state.q=e.target.value.trim().toLowerCase(); render(); };
+document.getElementById("fClear").onclick=()=>{
+  state={q:"",cuisine:null,method:null};
+  document.getElementById("q").value=""; render();
+};
+const fToggle=document.getElementById("fToggle"), filters=document.getElementById("filters");
+fToggle.onclick=()=>{
+  const open = filters.dataset.open==="1";
+  filters.dataset.open = open ? "0" : "1";
+  fToggle.setAttribute("aria-expanded", String(!open));
+  fToggle.textContent = open ? "Filter" : "Hide filters";
+};
+if(window.matchMedia("(max-width:640px)").matches) filters.dataset.open="0";
+
+document.getElementById("tTotal").textContent=RECIPES.length;
+document.getElementById("tCuisine").textContent=cuisines.length;
+document.getElementById("tMethod").textContent=methods.length;
+render();
+syncFromHash();
+
+if("serviceWorker" in navigator && location.protocol.startsWith("http")){
+  window.addEventListener("load",()=>{
+    navigator.serviceWorker.register("sw.js").catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
